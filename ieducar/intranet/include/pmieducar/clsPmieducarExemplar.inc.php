@@ -494,7 +494,16 @@ class clsPmieducarExemplar
 				$set .= "{$gruda}tombo = '{$this->tombo}'";
 				$gruda = ", ";
 			}
-
+                        
+                        if($this->tombo != NULL){
+                            $sql = "SELECT * FROM pmieducar.exemplar WHERE tombo = {$this->tombo}";
+                            $consulta = new clsBanco();
+                            $tombo = $consulta->CampoUnico($sql);
+                            if($tombo != NULL){
+                                return false;
+                            }
+                        }
+                        
 			if( $set )
 			{
 				$db->Consulta( "UPDATE {$this->_tabela} SET $set WHERE cod_exemplar = '{$this->cod_exemplar}'" );
