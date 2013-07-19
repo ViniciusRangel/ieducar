@@ -239,6 +239,7 @@ class indice extends clsCadastro
     if ($this->ref_cod_serie) {
       $disciplinas = '';
       $conteudo = '';
+      $apareceu = 0;
 
       // Instancia o mapper de ano escolar
       $anoEscolar = new ComponenteCurricular_Model_AnoEscolarDataMapper();
@@ -272,11 +273,26 @@ class indice extends clsCadastro
           }
 
           $cargaComponente = $registro->cargaHoraria;
-
+          
           $conteudo .= '<div style="margin-bottom: 10px; float: left">';
-          $conteudo .= "  <label style='display: block; float: left; width: 250px'><input type=\"checkbox\" $checked name=\"disciplinas[$registro->id]\" id=\"disciplinas[]\" value=\"{$registro->id}\">{$registro}</label>";
-          $conteudo .= "  <label style='display: block; float: left; width: 100px;'><input type='text' name='carga_horaria[$registro->id]' value='{$cargaHoraria}' size='5' maxlength='7'></label>";
-          $conteudo .= "  <label style='display: block; float: left'><input type='checkbox' name='usar_componente[$registro->id]' value='1' ". ($usarComponente == TRUE ? $checked : '') .">($cargaComponente h)</label>";
+          $conteudo .= '  <label style="display: block; float: left; width: 250px;">';
+          if(!$apareceu){
+            $conteudo .= '<input type="checkbox" name="todos" id="todosNome" value="todos" onclick="marcarDesmarcarNome();" /> Marcar/Desmarcar todos</br></br>';
+          }
+          $conteudo .= "  <input type=\"checkbox\" class=\"marcarNome\" $checked name=\"disciplinas[$registro->id]\" id=\"disciplinas[]\" value=\"{$registro->id}\">{$registro}</label>";
+          
+          $conteudo .= "<label style='display: block; float: left; width: 100px;'>";
+          if(!$apareceu){
+            $conteudo .= '<input type="hidden" name="branco" id="branco" /></br></br>';
+          }
+          $conteudo .= " <input type='text' name='carga_horaria[$registro->id]' value='{$cargaHoraria}' size='5' maxlength='7'></label>";
+          
+          $conteudo .= ' <label style="display: block; float: left" width: 100px;">';
+          if(!$apareceu){
+            $conteudo .= "<input type=\"checkbox\" name=\"todos\" id=\"todosPadrao\" value=\"checkbox\" onclick=\"marcarDesmarcarPadrao();\" /> Marcar/Desmarcar todos</br></br>";
+            $apareceu++;
+          }
+          $conteudo .= "<input type='checkbox' class=\"marcarPadrao\" name='usar_componente[$registro->id]' value='1' ". ($usarComponente == TRUE ? $checked : '') .">($cargaComponente h)</label>";
           $conteudo .= '</div>';
           $conteudo .= '<br style="clear: left" />';
 
@@ -503,6 +519,7 @@ $pagina->addForm($miolo);
 // Gera o código HTML
 $pagina->MakeAll();
 ?>
+<script src='scripts/jquery.min.js'></script>
 <script type="text/javascript">
 document.getElementById('ref_cod_instituicao').onchange = function()
 {
@@ -521,17 +538,50 @@ document.getElementById('ref_cod_curso').onchange = function()
   campoDisciplinas.innerHTML = "Nenhuma série selecionada";
 }
 
+function marcarDesmarcarNome(){
+   if ($("#todosNome").attr("checked")){
+      $('.marcarNome').each(
+         function(){
+            $(this).attr("checked", true);
+         }
+      );
+   }else{
+      $('.marcarNome').each(
+         function(){
+            $(this).attr("checked", false);
+         }
+      );
+   }
+}
+
+function marcarDesmarcarPadrao(){
+   if ($("#todosPadrao").attr("checked")){
+      $('.marcarPadrao').each(
+         function(){
+            $(this).attr("checked", true);
+         }
+      );
+   }else{
+      $('.marcarPadrao').each(
+         function(){
+            $(this).attr("checked", false);
+         }
+      );
+   }
+}
+
 function getDisciplina(xml_disciplina)
 {
   var campoDisciplinas = document.getElementById('disciplinas');
   var DOM_array = xml_disciplina.getElementsByTagName( "disciplina" );
   var conteudo = '';
+  var apareceu = 0;
 
   if (DOM_array.length) {
     conteudo += '<div style="margin-bottom: 10px; float: left">';
-    conteudo += '  <span style="display: block; float: left; width: 250px;">Nome</span>';
-    conteudo += '  <label span="display: block; float: left; width: 100px">Carga horária</span>';
-    conteudo += '  <label span="display: block; float: left">Usar padrão do componente?</span>';
+    conteudo += '  <span style="display: block; float: left; width: 250px;"> Nome </span>';
+    conteudo += '  <label span="display: block; float: left; width: 100px;"> Carga horária </label>';
+    conteudo += '  <label span="display: block; float: left; width: 100px;"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Usar padrão do componente? </label>';
     conteudo += '</div>';
     conteudo += '<br style="clear: left" />';
 
@@ -539,10 +589,28 @@ function getDisciplina(xml_disciplina)
       id = DOM_array[i].getAttribute("cod_disciplina");
 
       conteudo += '<div style="margin-bottom: 10px; float: left">';
-      conteudo += '  <label style="display: block; float: left; width: 250px;"><input type="checkbox" name="disciplinas['+ id +']" id="disciplinas[]" value="'+ id +'">'+ DOM_array[i].firstChild.data +'</label>';
-      conteudo += '  <label style="display: block; float: left; width: 100px;"><input type="text" name="carga_horaria['+ id +']" value="" size="5" maxlength="7"></label>';
-      conteudo += '  <label style="display: block; float: left"><input type="checkbox" name="usar_componente['+ id +']" value="1">('+ DOM_array[i].getAttribute("carga_horaria") +' h)</label>';
+      
+      conteudo += '  <label style="display: block; float: left; width: 250px;">\n\ ';
+      if(!apareceu){
+        conteudo += '<input type="checkbox" name="todos" id="todosNome" value="todos" onclick="marcarDesmarcarNome();" /> Marcar/Desmarcar todos</br></br>';
+      }
+      conteudo += '  <input type="checkbox" class="marcarNome" name="disciplinas['+ id +']" id="disciplinas[]" value="'+ id +'">'+ DOM_array[i].firstChild.data +'\ </label>';
+      
+      conteudo += '  <label style="display: block; float: left; width: 100px;">';
+      if(!apareceu){
+        conteudo += '<input type="hidden" name="todos" id="todos" /></br></br>';
+      }
+      conteudo += '<input type="text" class="marcar" name="carga_horaria['+ id +']" value="" size="5" maxlength="7"></label>';
+      
+      conteudo += '  <label style="display: block; float: left" width: 100px;">';
+      if(!apareceu){
+        conteudo += '<input type="checkbox" name="todos" id="todosPadrao" value="todos" onclick="marcarDesmarcarPadrao();" /> Marcar/Desmarcar todos</br></br>';
+        apareceu+=1;
+      }
+      conteudo += '<input type="checkbox" class="marcarPadrao" name="usar_componente['+ id +']" value="1">('+ DOM_array[i].getAttribute("carga_horaria") +' h) </label>';
+      
       conteudo += '</div>';
+     
       conteudo += '<br style="clear: left" />';
     }
   }
